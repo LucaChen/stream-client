@@ -13,14 +13,10 @@
 # 1. Install Python dependencies: cv2, flask. (wish that pip install works like a charm)
 # 2. Run "python main.py".
 # 3. Navigate the browser to the local webpage.
-import io
-import json
 import base64
 
 from flask import Flask, render_template, Response, jsonify, make_response
 import requests
-import numpy as np
-import cv2
 
 from camera import VideoCamera
 
