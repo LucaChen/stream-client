@@ -15,6 +15,7 @@
 # 3. Navigate the browser to the local webpage.
 import base64
 import os
+import time
 
 from flask import Flask, render_template, Response, jsonify, make_response
 import requests
@@ -84,6 +85,8 @@ def detect():
 
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+            if os.environ.get('THROTTLE_SERVER', False):
+                time.sleep(20)
     return Response(generate_detections(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
