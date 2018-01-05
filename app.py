@@ -52,8 +52,12 @@ def detect():
         yield '['
         while True:
             try:
-                _, image = cam.video.read()
-                _, jpeg = cv2.imencode('.jpg', image)
+                success, image = cam.video.read()
+                if success:
+                    _, jpeg = cv2.imencode('.jpg', image)
+                else:
+                    print('camera read failed')
+                    continue
             except IOError:
                 return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
 
