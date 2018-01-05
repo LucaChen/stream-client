@@ -57,7 +57,7 @@ def detect():
             except IOError:
                 return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
 
-            detections = requests.post('http://localhost:5001/detect',
+            detections = requests.post(os.environ.get('REMOTE_DETECT_SERVER', 'http://localhost:5001/detect'),
                                        data={'b64image': base64.b64encode(jpeg)})
             if detections.status_code == 200 and detections.json()['results']:
                 for obj in detections.json()['results']:
