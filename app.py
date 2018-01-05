@@ -14,9 +14,11 @@
 # 2. Run "python main.py".
 # 3. Navigate the browser to the local webpage.
 import base64
+import os
 
 from flask import Flask, render_template, Response, jsonify, make_response
 import requests
+import cv2
 
 from camera import VideoCamera
 
@@ -41,17 +43,46 @@ def video_feed():
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
-@app.route('/detect')
+@app.route('/stream-detect')
 def detect():
+    # http://flask.pocoo.org/docs/0.12/patterns/streaming/
     cam = VideoCamera()
-    try:
-        image = cam.get_frame()
-    except IOError:
-        return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
-    detections = requests.post('http://localhost:5001/detect',
-                               data={'b64image': base64.b64encode(image)})
-    return jsonify(detections.json())
+
+    def generate_detections():
+        yield '['
+        while True:
+            try:
+                _, image = cam.video.read()
+                _, jpeg = cv2.imencode('.jpg', image)
+            except IOError:
+                return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
+
+            detections = requests.post('http://localhost:5001/detect',
+                                       data={'b64image': base64.b64encode(jpeg)})
+            if detections.status_code == 200 and detections.json()['results']:
+                for obj in detections.json()['results']:
+                    image = cv2.rectangle(image,
+                                          (obj['topleft']['x'],
+                                           obj['topleft']['y'],),
+                                          (obj['bottomright']['x'],
+                                              obj['bottomright']['y'],),
+                                          (0, 255, 0),
+                                          3)
+                    image = cv2.putText(image, obj['label'],
+                                        (obj['topleft']['x'],
+                                         obj['topleft']['y'],),
+                                        cv2.FONT_HERSHEY_SIMPLEX,
+                                        1,
+                                        (255, 255, 255),
+                                        2,
+                                        cv2.LINE_AA)
+                    _, jpeg = cv2.imencode('.jpg', image)
+
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+    return Response(generate_detections(),
+                    mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    app.run(host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')
