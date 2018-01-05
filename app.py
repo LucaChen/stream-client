@@ -13,17 +13,17 @@
 # 1. Install Python dependencies: cv2, flask. (wish that pip install works like a charm)
 # 2. Run "python main.py".
 # 3. Navigate the browser to the local webpage.
-import base64
 import os
 import time
 
 from flask import Flask, render_template, Response, jsonify, make_response
-import requests
 import cv2
 
 from camera import VideoCamera
+import utils
 
 app = Flask(__name__)
+THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
 
 
 @app.route('/')
@@ -55,38 +55,23 @@ def detect():
             try:
                 success, image = cam.video.read()
                 if success:
-                    _, jpeg = cv2.imencode('.jpg', image)
+                    _, jpg = cv2.imencode('.jpg', image)
                 else:
                     print('camera read failed')
                     continue
             except IOError:
                 return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
 
-            detections = requests.post(os.environ.get('REMOTE_DETECT_SERVER', 'http://localhost:5001/detect'),
-                                       data={'b64image': base64.b64encode(jpeg)})
-            if detections.status_code == 200 and detections.json()['results']:
-                for obj in detections.json()['results']:
-                    image = cv2.rectangle(image,
-                                          (obj['topleft']['x'],
-                                           obj['topleft']['y'],),
-                                          (obj['bottomright']['x'],
-                                              obj['bottomright']['y'],),
-                                          (0, 255, 0),
-                                          3)
-                    image = cv2.putText(image, obj['label'],
-                                        (obj['topleft']['x'],
-                                         obj['topleft']['y'],),
-                                        cv2.FONT_HERSHEY_SIMPLEX,
-                                        1,
-                                        (255, 255, 255),
-                                        2,
-                                        cv2.LINE_AA)
-                    _, jpeg = cv2.imencode('.jpg', image)
+            detections = utils.check_detect(jpg)
+            if detections['results']:
+                for boxes in detections['results']:
+                    image = utils.draw_boxes(image, boxes)
+                    _, jpg = cv2.imencode('.jpg', image)
 
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + jpeg.tobytes() + b'\r\n\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + jpg.tobytes() + b'\r\n\r\n')
             if os.environ.get('THROTTLE_SERVER', False):
-                time.sleep(20)
+                time.sleep(THROTTLE_SECONDS)
     return Response(generate_detections(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
