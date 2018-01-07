@@ -1,0 +1,18 @@
+version: '2.1'
+
+services:
+  stream-service:
+    build: .
+    ports:
+      - 5000:5000
+    volumes:
+      - .:/src/app
+    environment:
+      - THROTTLE_SECONDS=5
+      - REMOTE_DETECT_SERVER=http://localhost:5001/detect
+      - UPSTREAM_REPORT_SERVER=http://localhost:5003/report
+      - REPORT_UP=True
+      - REPORT_UP_DURATION_SECONDS=5
+      - SECRET_KEY=test
+    devices:
+      - "/dev/vchiq:/dev/vchiq"

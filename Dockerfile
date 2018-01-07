@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.6.4-jessie
 MAINTAINER MD Islam <mdislamwork@gmail.com>
 
 # Original https://github.com/janza/docker-python3-opencv
