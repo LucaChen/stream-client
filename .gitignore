@@ -5,6 +5,7 @@
 darkflow/*
 __pycache__/*
 .vscode/*
+*.dab
 
 ### Linux ###
 *~

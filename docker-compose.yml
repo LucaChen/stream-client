@@ -3,6 +3,7 @@ version: '2.1'
 services:
   stream-service:
     build: .
+    image: doorman/stream-client:latest
     ports:
       - 5000:5000
     volumes:
@@ -15,4 +16,4 @@ services:
       - REPORT_UP_DURATION_SECONDS=5
       - SECRET_KEY=test
     devices:
-      - "/dev/ttyUSB0:/dev/ttyUSB0"
+      - "/dev/vchiq:/dev/vchiq"

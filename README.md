@@ -12,6 +12,10 @@ This client needs to be installed on the device that will capture images.
 ## Usage
 0. Run `sudo modprobe bcm2835-v4l2` to enable pi camera to work with opencv video capture
 
+## Docker Usage
+0. Docker Image - https://hub.docker.com/r/doorman/stream-client/
+1. `docker run --device "/dev/vchiq:/dev/vchiq" --volume ".:/src/app" doorman/stream-client:latest` Replace `--device` mount with where your camera is mounted.
+
 
 ## Tested Platforms
 1. Windows
