@@ -14,7 +14,7 @@ This client needs to be installed on the device that will capture images.
 
 ## Docker Usage
 0. Docker Image - https://hub.docker.com/r/doorman/stream-client/
-1. `docker run --device "/dev/vchiq:/dev/vchiq" --volume ".:/src/app" doorman/stream-client:latest` Replace `--device` mount with where your camera is mounted.
+1. `sudo docker run --device "/dev/vchiq:/dev/vchiq" --volume ".:/src/app" -p 5000:5000 doorman/stream-client:latest` Replace `--device` mount with where your camera is mounted.
 
 
 ## Tested Platforms

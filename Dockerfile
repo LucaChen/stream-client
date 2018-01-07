@@ -30,4 +30,7 @@ RUN cd ${OPENCV_DIR} && \
 
 WORKDIR /src/app
 
+COPY docker-requirements.txt /src/requirements/docker-requirements.txt
+RUN pip3 install -r /src/requirements/docker-requirements.txt
+
 CMD ["python3", "app.py"]
