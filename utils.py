@@ -19,7 +19,7 @@ def check_detect(jpg):
     if detections.status_code == 200:
         return detections.json()
     else:
-        raise requests.HTTPError()
+        detections.raise_for_status()
 
 
 def draw_boxes(image, boxes):
