@@ -21,3 +21,6 @@ class VideoCamera(object):
             raise IOError('Failed to read camera')
         ret, jpeg = cv2.imencode('.jpg', image)
         return jpeg
+
+
+CAMERA = VideoCamera()

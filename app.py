@@ -1,26 +1,30 @@
-#!/usr/bin/env python
-#
-# Project: Video Streaming with Flask
-# Author: Log0 <im [dot] ckieric [at] gmail [dot] com>
-# Date: 2014/12/21
-# Website: http://www.chioka.in/
-# Description:
-# Modified to support streaming out with webcams, and not just raw JPEGs.
-# Most of the code credits to Miguel Grinberg, except that I made a small tweak. Thanks!
-# Credits: http://blog.miguelgrinberg.com/post/video-streaming-with-flask
-#
-# Usage:
-# 1. Install Python dependencies: cv2, flask. (wish that pip install works like a charm)
-# 2. Run "python main.py".
-# 3. Navigate the browser to the local webpage.
 import os
 import time
+import logging
 
 from flask import Flask, render_template, Response, jsonify, make_response
 import cv2
 
-from camera import VideoCamera
+from camera import CAMERA
 import utils
+
+
+log_formatter = logging.Formatter(
+    "%(asctime)s [ %(threadName)-12.12s ] [ %(levelname)-5.5s ]  %(message)s")
+root_logger = logging.getLogger()
+
+file_handler = logging.FileHandler("warn.log")
+file_handler.setFormatter(log_formatter)
+root_logger.addHandler(file_handler)
+
+console_handler = logging.StreamHandler()
+# console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(log_formatter)
+root_logger.addHandler(console_handler)
+
+
+logging.getLogger('apscheduler').setLevel(logging.ERROR)
+
 
 app = Flask(__name__)
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
@@ -40,24 +44,23 @@ def gen(camera):
 
 @app.route('/video_feed')
 def video_feed():
-    return Response(gen(VideoCamera()),
+    return Response(gen(CAMERA),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/stream-detect')
 def detect():
     # http://flask.pocoo.org/docs/0.12/patterns/streaming/
-    cam = VideoCamera()
 
     def generate_detections():
         yield '['
         while True:
             try:
-                success, image = cam.video.read()
+                success, image = CAMERA.video.read()
                 if success:
                     _, jpg = cv2.imencode('.jpg', image)
                 else:
-                    print('camera read failed')
+                    root_logger.error('camera read failed')
                     continue
             except IOError:
                 return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
@@ -77,4 +80,5 @@ def detect():
 
 
 if __name__ == '__main__':
+    utils.start_scheduler()
     app.run(host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')

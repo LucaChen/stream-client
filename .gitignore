@@ -4,6 +4,7 @@
 ### etc ###
 darkflow/*
 __pycache__/*
+.vscode/*
 
 ### Linux ###
 *~
