@@ -10,6 +10,8 @@ from camera import VideoCamera
 REMOTE_DETECT_SERVER = os.environ.get(
     'REMOTE_DETECT_SERVER', 'http://localhost:5001/detect')
 
+print('REMOTE_DETECT_SERVER=', REMOTE_DETECT_SERVER)
+
 
 def check_detect(jpg):
     detections = requests.post(REMOTE_DETECT_SERVER,
@@ -17,7 +19,7 @@ def check_detect(jpg):
     if detections.status_code == 200:
         return detections.json()
     else:
-        detections.raise_for_status()
+        raise requests.HTTPError()
 
 
 def draw_boxes(image, boxes):
