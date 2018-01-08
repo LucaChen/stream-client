@@ -30,12 +30,12 @@ app = Flask(__name__)
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
 
 
-@app.route('/')
+@app.route('/test')
 def index():
     return render_template('index.html')
 
 
-@app.route('/ping')
+@app.route('/')
 def ping():
     return jsonify({
         'camera': CAMERA.video.isOpened()
