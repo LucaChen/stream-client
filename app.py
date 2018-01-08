@@ -1,8 +1,9 @@
 import os
 import time
 import logging
+import io
 
-from flask import Flask, render_template, Response, jsonify, make_response
+from flask import Flask, render_template, Response, jsonify, make_response, send_file
 import cv2
 
 from camera import CAMERA
@@ -57,8 +58,27 @@ def video_feed():
 
 @app.route('/frame')
 def get_frame():
-    return (b'--frame\r\n'
-            b'Content-Type: image/jpeg\r\n\r\n' + CAMERA.get_frame().tobytes() + b'\r\n\r\n')
+    return send_file(io.BytesIO(CAMERA.get_frame().tobytes()), mimetype='image/jpeg')
+
+
+def read_and_process():
+    success, image = CAMERA.video.read()
+    if success:
+        _, jpg = cv2.imencode('.jpg', image)
+    else:
+        raise IOError("Camera read failed")
+
+    detections = utils.check_detect(jpg)
+    return detections, image, jpg
+
+
+@app.route('/process')
+def process():
+    try:
+        detections, _, _ = read_and_process()
+        return jsonify(detections)
+    except IOError:
+        return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
 
 
 @app.route('/stream-detect')
@@ -68,17 +88,7 @@ def detect():
     def generate_detections():
         yield '['
         while True:
-            try:
-                success, image = CAMERA.video.read()
-                if success:
-                    _, jpg = cv2.imencode('.jpg', image)
-                else:
-                    root_logger.error('camera read failed')
-                    continue
-            except IOError:
-                return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
-
-            detections = utils.check_detect(jpg)
+            detections, image, jpg = read_and_process()
             if detections['results']:
                 for boxes in detections['results']:
                     image = utils.draw_boxes(image, boxes)
