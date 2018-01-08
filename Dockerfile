@@ -14,7 +14,7 @@ RUN apt-get update && \
 WORKDIR /
 
 # OpenCV
-ENV OPENCV_VERSION="3.2.0"
+ENV OPENCV_VERSION="3.4.0"
 ENV OPENCV_DIR="/opt/opencv/"
 
 ADD https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.tar.gz ${OPENCV_DIR}
@@ -24,7 +24,7 @@ RUN cd ${OPENCV_DIR} && \
     rm ${OPENCV_VERSION}.tar.gz && \
     mkdir ${OPENCV_DIR}opencv-${OPENCV_VERSION}/build && \
     cd ${OPENCV_DIR}opencv-${OPENCV_VERSION}/build && \
-    cmake -D CMAKE_BUILD_TYPE=RELEASE -D CMAKE_INSTALL_PREFIX=/usr/local .. && make -j4 && make install && \
+    cmake -D CMAKE_BUILD_TYPE=RELEASE -D BUILD_FFMPEG=ON -D CMAKE_INSTALL_PREFIX=/usr/local .. && make -j4 && make install && \
     mv /usr/local/lib/python3.4/dist-packages/cv2.cpython-34m.so /usr/local/lib/python3.4/dist-packages/cv2.so && \
     rm -rf ${OPENCV_DIR}
 

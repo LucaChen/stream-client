@@ -35,6 +35,13 @@ def index():
     return render_template('index.html')
 
 
+@app.route('/ping')
+def ping():
+    return jsonify({
+        'camera': CAMERA.video.isOpened()
+    })
+
+
 def gen(camera):
     while True:
         frame = camera.get_frame()
