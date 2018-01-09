@@ -29,6 +29,7 @@ logging.getLogger('apscheduler').setLevel(logging.ERROR)
 
 app = Flask(__name__)
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
+MAX_IO_RETRIES = int(os.environ.get('MAX_IO_RETRIES', 1))
 
 
 @app.route('/test')
@@ -61,11 +62,15 @@ def get_frame():
     return send_file(io.BytesIO(CAMERA.get_frame().tobytes()), mimetype='image/jpeg')
 
 
-def read_and_process():
+def read_and_process(attempt=0):
     success, image = CAMERA.video.read()
     if success:
         _, jpg = cv2.imencode('.jpg', image)
     else:
+        if attempt < MAX_IO_RETRIES:
+            # try to read again
+            CAMERA.restart()
+            return read_and_process(attempt + 1)
         raise IOError("Camera read failed")
 
     detections = utils.check_detect(jpg)
