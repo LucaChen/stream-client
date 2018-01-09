@@ -48,7 +48,7 @@ def gen(camera):
     while True:
         frame = camera.get_frame()
         yield (b'--frame\r\n'
-               b'Content-Type: image/jpeg\r\n\r\n' + frame.tobytes() + b'\r\n\r\n')
+               b'Content-Type: image/jpeg\r\n\r\n' + frame.tostring() + b'\r\n\r\n')
 
 
 @app.route('/video_feed')
@@ -59,7 +59,7 @@ def video_feed():
 
 @app.route('/frame')
 def get_frame():
-    return send_file(io.BytesIO(CAMERA.get_frame().tobytes()), mimetype='image/jpeg')
+    return send_file(io.BytesIO(CAMERA.get_frame().tostring()), mimetype='image/jpeg')
 
 
 def read_and_process(attempt=0):
@@ -100,7 +100,7 @@ def detect():
                     _, jpg = cv2.imencode('.jpg', image)
 
             yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + jpg.tobytes() + b'\r\n\r\n')
+                   b'Content-Type: image/jpeg\r\n\r\n' + jpg.tostring() + b'\r\n\r\n')
             if os.environ.get('THROTTLE_SERVER', False):
                 time.sleep(THROTTLE_SECONDS)
     return Response(generate_detections(),
