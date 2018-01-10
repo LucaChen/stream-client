@@ -19,6 +19,11 @@ def _dump_message(message):
     print(message)
 
 
+DETECT_API_CREDENTIALS = {
+    'user': os.environ['DETECT_API_USERNAME'],
+    'pass': os.environ['DETECT_API_PASSWORD']
+}
+
 REMOTE_DETECT_SERVER = os.environ.get(
     'REMOTE_DETECT_SERVER', 'http://localhost:5001/detect')
 UPSTREAM_REPORT_SERVER = os.environ.get(
@@ -34,6 +39,8 @@ SCHEDULER = BackgroundScheduler()
 
 def check_detect(jpg):
     detections = requests.post(REMOTE_DETECT_SERVER,
+                               auth=requests.auth.HTTPDigestAuth(DETECT_API_CREDENTIALS['user'],
+                                                                 DETECT_API_CREDENTIALS['pass']),
                                data={'b64image': base64.b64encode(jpg)})
     if detections.status_code == 200:
         return detections.json()
@@ -59,9 +66,11 @@ def draw_boxes(image, boxes):
                         cv2.LINE_AA)
     return image
 
+
 def kill_job():
     _dump_message("======= KILLING JOB =======")
     SCHEDULER.remove_all_jobs()
+
 
 def send_upstream_message(message, status):
     post_up = requests.post(UPSTREAM_REPORT_SERVER, json={

@@ -15,5 +15,10 @@ services:
       - REPORT_UP=True
       - REPORT_UP_DURATION_SECONDS=5
       - SECRET_KEY=test
+      - DETECT_API_USERNAME=api
+      - DETECT_API_PASSWORD=badpassword
+      - STREAM_ROOT_PASSWORD=badpassword
+      - STREAM_API_USERNAME=api
+      - STREAM_API_PASSWORD=badpassword
     devices:
       - "/dev/vchiq:/dev/vchiq"

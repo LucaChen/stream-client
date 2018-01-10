@@ -34,12 +34,13 @@ app = Flask(__name__)
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
 MAX_IO_RETRIES = int(os.environ.get('MAX_IO_RETRIES', 1))
 
+
 auth = HTTPBasicAuth()
 
 
 USER_DATA = {
     "root": os.environ['STREAM_ROOT_PASSWORD'],
-    "api": os.environ['STREAM_API_PASSWORD']
+    os.environ['STREAM_API_USERNAME']: os.environ['STREAM_API_PASSWORD']
 }
 
 

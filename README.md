@@ -9,7 +9,10 @@ This client needs to be installed on the device that will capture images.
 1. Flask
 
 ## Authentication
-Notice these lines of code in app.py
+
+### Stream Auth (this server)
+
+Notice these lines of code in `app.py`
 
 ```
 USER_DATA = {
@@ -21,6 +24,22 @@ USER_DATA = {
 This sets two users, one being root (you) and one for the API to use. Although this is basic, as long as your environment doesn't get compromised you should be fine.
 
 Make sure to set `STREAM_ROOT_PASSWORD` and `STREAM_API_PASSWORD` as two different passwords! Change them anytime to revoke access.
+
+
+### Objection Detection Auth
+
+`utils.py`
+
+```
+DETECT_API_CREDENTIALS = {
+    'user': os.environ['DETECT_API_USERNAME'],
+    'pass': os.environ['DETECT_API_PASSWORD']
+}
+```
+
+Additionally you need to set `DETECT_API_USERNAME` and `DETECT_API_PASSWORD` with the password that your API server has. If you would like to use my API server for the object detection set the username to `HACKSTER_IO` and password to `PASSWORD`
+
+
 
 ## Usage 
 1. **IMPORTANT** [debain based devices] Run `sudo modprobe bcm2835-v4l2` to enable pi camera to work with opencv video capture
