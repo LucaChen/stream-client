@@ -49,7 +49,13 @@ Additionally you need to set `DETECT_API_USERNAME` and `DETECT_API_PASSWORD` wit
 
 ## Docker Image Usage
 1. Docker Image - https://hub.docker.com/r/doorman/stream-client/
-1. `sudo docker run -MAX_IO_RETRIES=5 -e VIDEO_PATH=rtsp://<IP_OF_DEVICE></IP>:8555/unicast -e DEBUG=True --volume "/home/pi/projects/stream-client:/src/app" -p 5000:5000 doorman/stream-client` Replace `--device` mount with where your camera is mounted.
+
+RTSP Stream (replace VIDEO_PATH with any USB video camera mount like `/dev/ttyUSB0` if you want to use that as the source)
+1. `sudo docker run -MAX_IO_RETRIES=5 -e VIDEO_PATH=rtsp://<IP_OF_DEVICE></IP>:8555/unicast -e DEBUG=True --volume "/home/pi/projects/stream-client:/src/app" -p 5000:5000 doorman/stream-client`
+
+ArduCam
+1. `sudo docker run -e MAX_IO_RETRIES=5 -e CAMERA=arducam -e SERIAL_PORT=/d ev/ttyAMA0 -e DEBUG=True --volume "/home/pi/projects/stream-client:/src/app" -p 5000:5000 doorman/stream-client`
+
 
 
 ## Tested Platforms
