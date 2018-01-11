@@ -48,8 +48,18 @@ class Camera(BaseCamera):
         return Camera._being_processing()
 
     @staticmethod
+    def reboot_serial():
+        arducam_utils.send_byte(Camera.serial_port, 0)
+        Camera.serial_port.close()
+        serial_port = serial.Serial(Camera.port_source,
+                                    Camera.BAUD_RATE,
+                                    timeout=2)
+        Camera.serial_port = serial_port
+
+    @staticmethod
     def _force_ack():
-        logger.info("Forcing ACK message")
+        logger.info("Forcing ACK message + serial reboot")
+        Camera.reboot_serial()
         arducam_utils.send_byte(Camera.serial_port, 0)
         message = Camera.flush(Camera.serial_port)
         while ACK_STRING not in message:
