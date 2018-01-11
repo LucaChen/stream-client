@@ -63,6 +63,7 @@ class Camera(BaseCamera):
                 return message
 
             message = Camera.flush(Camera.serial_port)
+        logger.info("Forcing ACK exited with message %s" % message)
         return message
 
     @staticmethod
@@ -87,12 +88,14 @@ class Camera(BaseCamera):
         written = False
         prevbyte = None
         buf = BytesIO()
-        logger.debug('Starting to read bytes...')
+        logger.info('Starting to read bytes...')
         while True:
             # Read a byte from Arduino
             currbyte = serial_port.read(1)
 
             while not currbyte:
+                logger.info(
+                    'currbyte was not True, sending 1 and trying to read again...')
                 arducam_utils.send_byte(serial_port, 1)
                 time.sleep(0.2)
                 currbyte = serial_port.read(1)
