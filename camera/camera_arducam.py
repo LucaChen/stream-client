@@ -49,13 +49,16 @@ class Camera(BaseCamera):
 
     @staticmethod
     def _force_ack():
+        logger.info("Forcing ACK message")
         arducam_utils.send_byte(Camera.serial_port, 0)
         message = Camera.flush(Camera.serial_port)
         while ACK_STRING not in message:
             time.sleep(.2)
             if message:
+                logger.info("Forcing ACK sending 0")
                 arducam_utils.send_byte(Camera.serial_port, 0)
             else:
+                logger.info("Forcing ACK sending 1 and continuing")
                 arducam_utils.send_byte(Camera.serial_port, 1)
                 return message
 
@@ -74,25 +77,12 @@ class Camera(BaseCamera):
         except UnicodeDecodeError:
             logger.error(
                 'UnicodeDecodeError during ACK check, trying to restart.')
-            # arducam_utils.send_byte(serial_port, 0)
-            # message = Camera.flush(serial_port)
-            # logger.error('UnicodeDecodeError has ACK == %s  flush message %s' % (
-            #     str(ACK_STRING in message), message))
-            # if not ACK_STRING in message:
-            #     print(
-            #         'ACK_STRING not found in flush, calling function again.')
-            #     Camera._being_processing()
-            #     return
-            # else:
-            #     logger.info('ACK_STRING found in flush, continuing.')
+            Camera._force_ack()
 
         except AssertionError:
             logger.error(
                 'AssertionError during ACK check, trying to restart.')
-            # arducam_utils.send_byte(serial_port, 0)
-            # message = Camera.flush(serial_port)
-            # logger.error('AssertionError flush message %s' % message)
-            # Camera._being_processing()
+            Camera._force_ack()
 
         written = False
         prevbyte = None
