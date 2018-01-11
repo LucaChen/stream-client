@@ -10,7 +10,7 @@ This client needs to be installed on the device that will capture images.
 
 ## Authentication
 
-Includee, `example.env`, is a file you need fill out and rename to `.env`. Git will ignore this file once it's renamed.
+Included, `example.env`, is a file you need fill out and rename to `.env`. Git will ignore this file once it's renamed.
 
 ### Stream Auth (this server)
 

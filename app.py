@@ -33,8 +33,8 @@ console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(log_formatter)
 root_logger.addHandler(console_handler)
 
-
-logging.getLogger('apscheduler').setLevel(logging.ERROR)
+root_logger.setLevel(logging.DEBUG)
+logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 
 app = Flask(__name__)

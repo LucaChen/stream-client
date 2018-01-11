@@ -1,9 +1,13 @@
 import time
 import threading
+import logging
+
+logger = logging.getLogger()
+
 try:
     from greenlet import getcurrent as get_ident
 except ImportError:
-    print('skipping greenlet')
+    logger.info('Greenlet not installed using native threads')
     try:
         from thread import get_ident
     except ImportError:
@@ -88,10 +92,14 @@ class BaseCamera(object):
         """"Generator that returns frames from the camera."""
         raise RuntimeError('Must be implemented by subclasses.')
 
+    @staticmethod
+    def shutdown():
+        raise RuntimeError('Must be implemented by subclasses.')
+
     @classmethod
     def _thread(cls):
         """Camera background thread."""
-        print('Starting camera thread.')
+        logger.info('Starting camera thread.')
         frames_iterator = cls.frames()
         for img, frame in frames_iterator:
             BaseCamera.frame = frame
@@ -103,6 +111,11 @@ class BaseCamera(object):
             # the last 10 seconds then stop the thread
             if time.time() - BaseCamera.last_access > 10:
                 frames_iterator.close()
-                print('Stopping camera thread due to inactivity.')
+                logger.info('Stopping camera thread due to inactivity.')
+                if hasattr(cls, 'needs_shutdown'):
+                    logger.info('Calling %s subclass shutdown' % str(cls))
+                    cls.shutdown()
+                else:
+                    logger.info('No safe shutdown method flag found')
                 break
         BaseCamera.thread = None
