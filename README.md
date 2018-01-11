@@ -10,20 +10,22 @@ This client needs to be installed on the device that will capture images.
 
 ## Authentication
 
+Includee, `example.env`, is a file you need fill out and rename to `.env`. Git will ignore this file once it's renamed.
+
 ### Stream Auth (this server)
 
 Notice these lines of code in `app.py`
 
 ```
 USER_DATA = {
-    "root": os.environ['STREAM_ROOT_PASSWORD'],
-    "api": os.environ['STREAM_API_PASSWORD']
+    os.environ['STREAM_ROOT_USERNAME']: os.environ['STREAM_ROOT_PASSWORD'],
+    os.environ['STREAM_API_USERNAME']: os.environ['STREAM_API_PASSWORD']
 }
 ```
 
 This sets two users, one being root (you) and one for the API to use. Although this is basic, as long as your environment doesn't get compromised you should be fine.
 
-Make sure to set `STREAM_ROOT_PASSWORD` and `STREAM_API_PASSWORD` as two different passwords! Change them anytime to revoke access.
+Make sure to set `STREAM_ROOT_USERNAME`, `STREAM_ROOT_PASSWORD`, and `STREAM_API_PASSWORD` as two different passwords! Change them anytime to revoke access.
 
 
 ### Objection Detection Auth

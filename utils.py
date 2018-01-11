@@ -4,12 +4,16 @@ import time
 from datetime import datetime
 import logging
 import json
+from importlib import import_module
 
 import requests
 import cv2
 from apscheduler.schedulers.background import BackgroundScheduler
 
-from camera import CAMERA
+
+Camera = import_module(
+    'camera.camera_' + os.environ.get('CAMERA', 'opencv')).Camera
+
 
 logger = logging.getLogger()
 
@@ -87,20 +91,15 @@ def send_upstream_message(message, status):
 
 def report_upstream():
     try:
-        success, image = CAMERA.video.read()
-        if success:
-            _, jpg = cv2.imencode('.jpg', image)
-            detections = check_detect(jpg)
-            if detections['results']:
-                for detection in detections['results']:
-                    if detection['label'] == 'person':
-                        send_upstream_message(
-                            message=detection, status='success')
-        else:
-            _dump_message('camera read failed, killing job')
-            send_upstream_message(
-                message="Camera read failed!", status='error')
-            kill_job()
+        camera = Camera()
+        image, jpg = camera.get_frame()
+        detections = check_detect(jpg)
+        if detections['results']:
+            for detection in detections['results']:
+                if detection['label'] == 'person':
+                    send_upstream_message(
+                        message=detection, status='success')
+
     except IOError as e:
         logger.exception(e)
         send_upstream_message(message=str(e), status='error')

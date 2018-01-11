@@ -4,13 +4,20 @@ import os
 import time
 import logging
 import io
+from importlib import import_module
 
 from flask import Flask, render_template, Response, jsonify, make_response, send_file
 from flask_httpauth import HTTPBasicAuth
 import cv2
+from os.path import join, dirname
+from dotenv import load_dotenv
 
-from camera import CAMERA
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
 import utils
+Camera = import_module(
+    'camera.camera_' + os.environ.get('CAMERA', 'opencv')).Camera
 
 
 log_formatter = logging.Formatter(
@@ -22,7 +29,7 @@ file_handler.setFormatter(log_formatter)
 root_logger.addHandler(file_handler)
 
 console_handler = logging.StreamHandler()
-# console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(log_formatter)
 root_logger.addHandler(console_handler)
 
@@ -34,12 +41,11 @@ app = Flask(__name__)
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
 MAX_IO_RETRIES = int(os.environ.get('MAX_IO_RETRIES', 1))
 
-
 auth = HTTPBasicAuth()
 
 
 USER_DATA = {
-    "root": os.environ['STREAM_ROOT_PASSWORD'],
+    os.environ['STREAM_ROOT_USERNAME']: os.environ['STREAM_ROOT_PASSWORD'],
     os.environ['STREAM_API_USERNAME']: os.environ['STREAM_API_PASSWORD']
 }
 
@@ -60,14 +66,15 @@ def index():
 @app.route('/')
 @auth.login_required
 def ping():
+    camera = Camera()
     return jsonify({
-        'camera': CAMERA.video.isOpened()
+        'camera': camera.get_frame() is not None
     })
 
 
 def gen(camera):
     while True:
-        frame = camera.get_frame()
+        _, frame = camera.get_frame()
         yield (b'--frame\r\n'
                b'Content-Type: image/jpeg\r\n\r\n' + frame.tostring() + b'\r\n\r\n')
 
@@ -75,27 +82,18 @@ def gen(camera):
 @app.route('/video_feed')
 @auth.login_required
 def video_feed():
-    return Response(gen(CAMERA),
+    return Response(gen(Camera()),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
 @app.route('/frame')
 @auth.login_required
 def get_frame():
-    return send_file(io.BytesIO(CAMERA.get_frame().tostring()), mimetype='image/jpeg')
+    return send_file(io.BytesIO(Camera().get_frame()[1].tostring()), mimetype='image/jpeg')
 
 
-def read_and_process(attempt=0):
-    success, image = CAMERA.video.read()
-    if success:
-        _, jpg = cv2.imencode('.jpg', image)
-    else:
-        if attempt < MAX_IO_RETRIES:
-            # try to read again
-            CAMERA.restart()
-            return read_and_process(attempt + 1)
-        raise IOError("Camera read failed")
-
+def read_and_process(camera):
+    image, jpg = camera.get_frame()
     detections = utils.check_detect(jpg)
     return detections, image, jpg
 
@@ -104,7 +102,8 @@ def read_and_process(attempt=0):
 @auth.login_required
 def process_single_frame():
     try:
-        detections, _, _ = read_and_process()
+        camera = Camera()
+        detections, _, _ = read_and_process(camera)
         return jsonify(detections)
     except IOError:
         return make_response(jsonify({'status': 'error', 'message': 'failed to read camera'}), 500)
@@ -114,11 +113,12 @@ def process_single_frame():
 @auth.login_required
 def detect():
     # http://flask.pocoo.org/docs/0.12/patterns/streaming/
+    camera = Camera()
 
     def generate_detections():
         yield '['
         while True:
-            detections, image, jpg = read_and_process()
+            detections, image, jpg = read_and_process(camera)
             if detections['results']:
                 for boxes in detections['results']:
                     image = utils.draw_boxes(image, boxes)
