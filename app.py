@@ -57,7 +57,7 @@ def verify(username, password):
     return USER_DATA.get(username) == password
 
 
-@app.route('/test')
+@app.route('/live')
 @auth.login_required
 def index():
     return render_template('index.html')
