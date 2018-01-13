@@ -63,6 +63,7 @@ class BaseCamera(object):
     img = None
     last_access = 0  # time of last client access to the camera
     event = CameraEvent()
+    has_shutdown = False
 
     def __init__(self):
         """Start the background camera thread if it isn't running yet."""
@@ -117,5 +118,6 @@ class BaseCamera(object):
                     cls.shutdown()
                 else:
                     logger.info('No safe shutdown method flag found')
+                BaseCamera.has_shutdown = True
                 break
         BaseCamera.thread = None

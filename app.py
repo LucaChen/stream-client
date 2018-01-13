@@ -5,19 +5,21 @@ import time
 import logging
 import io
 from importlib import import_module
-
-from flask import Flask, render_template, Response, jsonify, make_response, send_file
-from flask_httpauth import HTTPBasicAuth
-import cv2
+import threading
 from os.path import join, dirname
 from dotenv import load_dotenv
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
+from flask import Flask, render_template, Response, jsonify, make_response, send_file
+from flask_httpauth import HTTPBasicAuth
+import cv2
+
 import utils
 Camera = import_module(
     'camera.camera_' + os.environ.get('CAMERA', 'opencv')).Camera
+from camera.rtsp_server import start_rtsp, RTSP_URL
 
 
 log_formatter = logging.Formatter(
@@ -134,4 +136,8 @@ def detect():
 
 if __name__ == '__main__':
     utils.start_scheduler()
-    app.run(host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')
+    root_logger.info('Starting Flask server thread')
+    threading.Thread(target=lambda: app.run(
+        host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')).start()
+    root_logger.info('Starring RTSP thread, hosted on {0}'.format(RTSP_URL))
+    threading.Thread(target=start_rtsp(Camera)).start()
