@@ -19,6 +19,7 @@ import cv2
 import utils
 Camera = import_module(
     'camera.camera_' + os.environ.get('CAMERA', 'opencv')).Camera
+
 from camera.rtsp_server import start_rtsp, RTSP_URL
 
 
@@ -139,5 +140,5 @@ if __name__ == '__main__':
     root_logger.info('Starting Flask server thread')
     threading.Thread(target=lambda: app.run(
         host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')).start()
-    root_logger.info('Starring RTSP thread, hosted on {0}'.format(RTSP_URL))
+    root_logger.info('Starting RTSP thread, hosted on {0}'.format(RTSP_URL))
     threading.Thread(target=start_rtsp(Camera)).start()
