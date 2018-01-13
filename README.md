@@ -45,25 +45,25 @@ Additionally you need to set `DETECT_API_USERNAME` and `DETECT_API_PASSWORD` wit
 
 ## Usage 
 1. **IMPORTANT** [debain based devices] Run `sudo modprobe bcm2835-v4l2` to enable pi camera to work with opencv video capture
-1. Setup the RTSP server: `v4l2rtspserver -F15 -H 480 -W 640 -P 8555 /dev/video0` (Use the second method here: http://c.wensheng.org/2017/05/18/stream-from-raspberrypi/)
+
 
 ## Docker Image Usage
 1. Docker Image - https://hub.docker.com/r/doorman/stream-client/
 
-RTSP Stream (replace VIDEO_PATH with any USB video camera mount like `/dev/ttyUSB0` if you want to use that as the source)
-1. `sudo docker run -MAX_IO_RETRIES=5 -e VIDEO_PATH=rtsp://<IP_OF_DEVICE></IP>:8555/unicast -e DEBUG=True --volume "/home/pi/projects/stream-client:/src/app" -p 5000:5000 doorman/stream-client`
+### OpenCV
+1. `sudo docker run --previleged -MAX_IO_RETRIES=5 -e -CAMERA=opencv -e DEBUG=True --volume "/home/pi/projects/stream-client:/src/app" -p 5000:5000 doorman/stream-client`
 
-ArduCam
+### ArduCam
 1. `sudo docker run --previleged -e MAX_IO_RETRIES=5 -e CAMERA=arducam -e SERIAL_PORT=/dev/ttyACM0 -e DEBUG=True --volume "/home/pi/projects/stream-client:/src/app" -p 5000:5000 doorman/stream-client`
 
 
 
 ## Tested Platforms
 1. Windows
-1. Raspbian Jessie
+1. Raspbian Stretch
 2. Intel Edison/jubilinux
 
 
 ## Credits
-Most of the code credits to Miguel Grinberg for the initial streaming section
+Miguel Grinberg for the initial streaming section
 http://blog.miguelgrinberg.com/post/video-streaming-with-flask
