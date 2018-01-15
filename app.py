@@ -136,9 +136,9 @@ def detect():
 
 
 if __name__ == '__main__':
-    utils.start_scheduler()
     root_logger.info('Starting Flask server thread')
     threading.Thread(target=lambda: app.run(
         host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')).start()
     root_logger.info('Starting RTSP thread, hosted on {0}'.format(RTSP_URL))
-    threading.Thread(target=start_rtsp(Camera)).start()
+    threading.Thread(target=lambda: start_rtsp(Camera)).start()
+    threading.Thread(target=lambda: utils.start_motion_tracker()).start()
