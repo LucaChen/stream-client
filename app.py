@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
-from flask import Flask, render_template, Response, jsonify, make_response, send_file
+from flask import Flask, render_template, Response, jsonify, make_response, send_file, request
 from flask_httpauth import HTTPBasicAuth
 import cv2
 
@@ -44,9 +44,13 @@ app = Flask(__name__)
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
 MAX_IO_RETRIES = int(os.environ.get('MAX_IO_RETRIES', 1))
 
+# get this from https://doorman.printdebug.com and keep it safe! it's how reports are verified and sent upstream
+UPSTREAM_SECRET_KEY = os.environ['UPSTREAM_SECRET_KEY']
+
 auth = HTTPBasicAuth()
 
 
+# users allowed access in your system
 USER_DATA = {
     os.environ['STREAM_ROOT_USERNAME']: os.environ['STREAM_ROOT_PASSWORD'],
     os.environ['STREAM_API_USERNAME']: os.environ['STREAM_API_PASSWORD']
@@ -133,6 +137,15 @@ def detect():
                 time.sleep(THROTTLE_SECONDS)
     return Response(generate_detections(),
                     mimetype='multipart/x-mixed-replace; boundary=frame')
+
+
+@app.route('/verify-key')
+def verify_upstream_key():
+    body = request.get_json()
+    if body['UPSTREAM_REPORT_KEY'] != UPSTREAM_SECRET_KEY:
+        return make_response(jsonify({"status": "error", "message": "invalid upstream secret key"}), 401)
+    else:
+        return jsonify({"status": "success"})
 
 
 if __name__ == '__main__':

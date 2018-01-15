@@ -31,7 +31,7 @@ DETECT_API_CREDENTIALS = {
 REMOTE_DETECT_SERVER = os.environ.get(
     'REMOTE_DETECT_SERVER', 'http://localhost:5001/detect')
 UPSTREAM_REPORT_SERVER = os.environ.get(
-    'UPSTREAM_REPORT_SERVER', 'http://localhost:5003/report')
+    'UPSTREAM_REPORT_SERVER', 'https://doorman.printdebug.com/report')
 REPORT_UP = os.environ.get('REPORT_UP') == 'True'
 RESET_MOTION_TRACKER = int(os.environ.get('RESET_MOTION_TRACKER', 10))
 JOB_ID = 'detect_job'
@@ -87,7 +87,7 @@ def send_upstream_message(message, status):
         'message': message,
         'status': status,
         'now': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
-        'key': os.environ['SECRET_KEY']
+        'key': os.environ['UPSTREAM_SECRET_KEY']
     })
     logger.info('Sent message %s' % str(message))
     if post_up.status_code != 200:
@@ -100,10 +100,8 @@ def report_upstream(frame):
         jpg = cv2.imencode('.jpg', frame)[1]
         detections = check_detect(jpg)
         if detections['results']:
-            for detection in detections['results']:
-                if detection['label'] == 'person':
-                    send_upstream_message(
-                        message=detection, status='success')
+            send_upstream_message(
+                message=detections['results'], status='success')
 
     except IOError as e:
         logger.exception(e)
@@ -193,13 +191,12 @@ def _start_tracking():
                 now = datetime.now()
                 p1 = (int(bbox[0]), int(bbox[1]))
                 p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
-                cv2.rectangle(frame, p1, p2, (0, 0, 255), 1)
+                # cv2.rectangle(frame, p1, p2, (0, 0, 255), 1)
                 if (now - last_recorded).total_seconds() > RESET_MOTION_TRACKER:
                     logger.info('Motion detected at {0}'.format(now))
                     cv2.imwrite(os.path.join(
                         CAPTURE_DIRECTORY, now.strftime('%Y-%m-%d_%H_%M_%S') + '.jpg'), frame)
                     last_recorded = now
-                # time.sleep(5)
 
         # If we have been tracking for more than a few seconds
         if idle_time >= 2:
