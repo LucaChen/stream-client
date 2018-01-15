@@ -10,7 +10,7 @@ This client needs to be installed on the device that will capture images.
 
 ## Authentication
 
-Included, `example.env`, is a file you need fill out and rename to `.env`. Git will ignore this file once it's renamed.
+Included, `example.env`, is a file you need fill out and rename to `.env`. You can skip the following steps if you fill that file out. Git will ignore this file once it's renamed.
 
 ### Stream Auth (this server)
 
@@ -38,10 +38,6 @@ DETECT_API_CREDENTIALS = {
     'pass': os.environ['DETECT_API_PASSWORD']
 }
 ```
-
-Additionally you need to set `DETECT_API_USERNAME` and `DETECT_API_PASSWORD` with the password that your API server has. If you would like to use my API server for the object detection set the username to `HACKSTER_IO` and password to `PASSWORD`
-
-
 
 ## Usage 
 1. **IMPORTANT** [debain based devices] Run `sudo modprobe bcm2835-v4l2` to enable pi camera to work with opencv video capture
