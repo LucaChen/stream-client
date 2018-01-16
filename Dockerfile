@@ -16,14 +16,16 @@ WORKDIR /
 # OpenCV
 ENV OPENCV_VERSION="3.4.0"
 ENV OPENCV_DIR="/opt/opencv/"
-ENV OPENCV_CONTRIB_DIR ="/opt/opencv-contrib/"
+ENV OPENCV_CONTRIB_VERSION="3.4.0"
+ENV OPENCV_CONTRIB_DIR="/opt/opencv-contrib/"
 
-ADD https://github.com/opencv/opencv_contrib/archive/${OPENCV_VERSION}.tar.gz ${OPENCV_CONTRIB_DIR}
+ADD https://github.com/opencv/opencv_contrib/archive/${OPENCV_CONTRIB_VERSION}.tar.gz ${OPENCV_CONTRIB_DIR}
 
 RUN cd ${OPENCV_CONTRIB_DIR} && \
-    tar -xzf ${OPENCV_VERSION}.tar.gz && \
-    rm ${OPENCV_VERSION}.tar.gz && \
-    mv opencv_contrib-${OPENCV_VERSION} contrib
+    tar -xzf ${OPENCV_CONTRIB_VERSION}.tar.gz && \
+    rm ${OPENCV_CONTRIB_VERSION}.tar.gz && \
+    mv opencv_contrib-${OPENCV_CONTRIB_VERSION} contrib && \
+    cd ${OPENCV_CONTRIB_DIR}contrib/modules && pwd
 
 
 ADD https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.tar.gz ${OPENCV_DIR}

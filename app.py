@@ -113,6 +113,7 @@ def process_single_frame():
         detections, _, _ = read_and_process(camera)
         return jsonify(detections)
     except IOError as e:
+        root_logger.error(str(e))
         return make_response(jsonify({'status': 'error', 'message': 'failed to read camera', 'error': str(e)}), 500)
 
 
@@ -124,7 +125,6 @@ def detect():
 
     def generate_detections():
         root_logger.info('Beginning to read and process frames')
-        yield '['
         while True:
             detections, image, jpg = read_and_process(camera)
             root_logger.info('Detected objects, altering frame')
