@@ -41,6 +41,7 @@ logging.getLogger('apscheduler').setLevel(logging.DEBUG)
 
 
 app = Flask(__name__)
+app.use_reloader = False
 THROTTLE_SECONDS = int(os.environ.get('THROTTLE_SECONDS', 5))
 MAX_IO_RETRIES = int(os.environ.get('MAX_IO_RETRIES', 1))
 
@@ -125,12 +126,14 @@ def detect():
         root_logger.info('Beginning to read and process frames')
         while True:
             detections, image, jpg = read_and_process(Camera())
-            root_logger.info('Detected objects, altering frame')
             if detections['results']:
+                root_logger.info('Detected objects, altering frame')
                 for boxes in detections['results']:
                     image = utils.draw_boxes(image, boxes)
                     _, jpg = cv2.imencode('.jpg', image)
-
+            else:
+                root_logger.info(
+                    'No objects recognized, passing original back frame')
             yield (b'--frame\r\n'
                    b'Content-Type: image/jpeg\r\n\r\n' + jpg.tostring() + b'\r\n\r\n')
             if os.environ.get('THROTTLE_SERVER', False):
@@ -151,6 +154,7 @@ def verify_upstream_key():
 if __name__ == '__main__':
     root_logger.info('Starting Flask server thread')
     root_logger.info('Starting RTSP thread, hosted on %s', RTSP_URL)
+    threading.Thread(target=lambda: app.run(
+        host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')).start()
     threading.Thread(target=lambda: start_rtsp(Camera)).start()
     threading.Thread(target=utils.start_motion_tracker).start()
-    app.run(host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')

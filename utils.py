@@ -49,14 +49,14 @@ SCHEDULER = BackgroundScheduler()
 
 def check_detect(jpg):
     detections = requests.post(REMOTE_DETECT_SERVER,
-                               auth=requests.auth.HTTPBasicAuth(DETECT_API_CREDENTIALS['user'],
-                                                                DETECT_API_CREDENTIALS['pass']),
+                               auth=(DETECT_API_CREDENTIALS['user'],
+                                     DETECT_API_CREDENTIALS['pass']),
                                data={'b64image': base64.b64encode(jpg)})
     if detections.status_code == 200:
         return detections.json()
     else:
-        logger.error("Failed to detect {0} because of error {1}".format(
-            REMOTE_DETECT_SERVER, detections.status_code))
+        logger.error("Failed to detect %s because of error %i",
+                     REMOTE_DETECT_SERVER, detections.status_code)
         detections.raise_for_status()
 
 
