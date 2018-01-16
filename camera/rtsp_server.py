@@ -4,6 +4,7 @@ Also, it's adapted from: https://github.com/tamaggo/gstreamer-examples
 
 """
 import logging
+import base64
 
 import cv2
 import gi
@@ -54,6 +55,7 @@ class SensorFactory(GstRtspServer.RTSPMediaFactory):
         return Gst.parse_launch(self.launch_string)
 
     def do_configure(self, rtsp_media):
+        print('do_configure', rtsp_media)
         self.number_frames = 0
         appsrc = rtsp_media.get_element().get_child_by_name('source')
         appsrc.connect('need-data', self.on_need_data)
@@ -64,8 +66,16 @@ class GstServer(GstRtspServer.RTSPServer):
         super(GstServer, self).__init__(**properties)
         self.factory = SensorFactory(camera_source)
         self.factory.set_shared(True)
-        self.get_mount_points().add_factory(CHANNEL, self.factory)
+        # Auth is broken for now
+        # auth = GstRtspServer.RTSPAuth()
+        # token = GstRtspServer.RTSPToken()
+        # basic = auth.make_basic('user', 'password')
+        # # auth.set_default_token(token)
+        # auth.add_basic(basic, token)
+        # self.set_auth(auth)
+        # print('basic', basic)
         self.attach(None)
+        self.get_mount_points().add_factory(CHANNEL, self.factory)
 
 
 def start_rtsp(camera_source):
