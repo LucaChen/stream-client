@@ -152,8 +152,7 @@ def verify_upstream_key():
 
 if __name__ == '__main__':
     root_logger.info('Starting Flask server thread')
-    threading.Thread(target=lambda: app.run(
-        host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')).start()
     root_logger.info('Starting RTSP thread, hosted on {0}'.format(RTSP_URL))
     threading.Thread(target=lambda: start_rtsp(Camera)).start()
     threading.Thread(target=lambda: utils.start_motion_tracker()).start()
+    app.run(host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')
