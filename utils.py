@@ -41,7 +41,7 @@ if not os.path.exists(os.path.join(CAPTURE_DIRECTORY, 'capture')):
     os.makedirs(os.path.join(CAPTURE_DIRECTORY, 'capture'))
 CAPTURE_DIRECTORY = os.path.join(CAPTURE_DIRECTORY, 'capture')
 
-logger.info('REMOTE_DETECT_SERVER (where yolo detection requests go to) is set to %s' %
+logger.info('REMOTE_DETECT_SERVER (where yolo detection requests go to) is set to %s',
             REMOTE_DETECT_SERVER)
 
 SCHEDULER = BackgroundScheduler()
@@ -91,7 +91,7 @@ def send_upstream_message(message, status):
         'now': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
         'key': os.environ['UPSTREAM_SECRET_KEY']
     })
-    logger.info('Sent message %s' % str(message))
+    logger.info('Sent message %s', str(message))
     if post_up.status_code != 200:
         kill_job()
         post_up.raise_for_status()
@@ -195,7 +195,7 @@ def _start_tracking():
                 p2 = (int(bbox[0] + bbox[2]), int(bbox[1] + bbox[3]))
                 # cv2.rectangle(frame, p1, p2, (0, 0, 255), 1)
                 if (now - last_recorded).total_seconds() > RESET_MOTION_TRACKER:
-                    logger.info('Motion detected at {0}'.format(now))
+                    logger.info('Motion detected at %s', str(now))
                     cv2.imwrite(os.path.join(
                         CAPTURE_DIRECTORY, now.strftime('%Y-%m-%d_%H_%M_%S') + '.jpg'), frame)
                     last_recorded = now

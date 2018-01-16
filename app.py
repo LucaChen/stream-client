@@ -121,12 +121,10 @@ def process_single_frame():
 @auth.login_required
 def detect():
     # http://flask.pocoo.org/docs/0.12/patterns/streaming/
-    camera = Camera()
-
     def generate_detections():
         root_logger.info('Beginning to read and process frames')
         while True:
-            detections, image, jpg = read_and_process(camera)
+            detections, image, jpg = read_and_process(Camera())
             root_logger.info('Detected objects, altering frame')
             if detections['results']:
                 for boxes in detections['results']:
@@ -152,7 +150,7 @@ def verify_upstream_key():
 
 if __name__ == '__main__':
     root_logger.info('Starting Flask server thread')
-    root_logger.info('Starting RTSP thread, hosted on {0}'.format(RTSP_URL))
+    root_logger.info('Starting RTSP thread, hosted on %s', RTSP_URL)
     threading.Thread(target=lambda: start_rtsp(Camera)).start()
-    threading.Thread(target=lambda: utils.start_motion_tracker()).start()
+    threading.Thread(target=utils.start_motion_tracker).start()
     app.run(host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')
