@@ -143,6 +143,7 @@ def detect():
 
 
 @app.route('/verify-key')
+@auth.login_required
 def verify_upstream_key():
     body = request.get_json()
     if body['UPSTREAM_REPORT_KEY'] != UPSTREAM_SECRET_KEY:
