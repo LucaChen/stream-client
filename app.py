@@ -156,6 +156,9 @@ if __name__ == '__main__':
     root_logger.info('Starting Flask server thread')
     root_logger.info('Starting RTSP thread, hosted on %s', RTSP_URL)
     threading.Thread(target=lambda: app.run(
-        host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True')).start()
-    threading.Thread(target=lambda: start_rtsp(Camera)).start()
-    threading.Thread(target=utils.start_motion_tracker).start()
+        host='0.0.0.0', debug=os.environ.get('DEBUG') == 'True'),
+        daemon=True).start()
+    threading.Thread(target=lambda: start_rtsp(Camera),
+                     daemon=True).start()
+    threading.Thread(target=utils.start_motion_tracker,
+                     daemon=True).start()
