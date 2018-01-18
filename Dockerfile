@@ -1,4 +1,5 @@
-FROM armhf/debian
+FROM resin/rpi-raspbian:stretch
+
 MAINTAINER MD Islam <mdislamwork@gmail.com>
 
 
@@ -38,12 +39,15 @@ RUN cd ${OPENCV_DIR} && \
     cmake -D CMAKE_BUILD_TYPE=RELEASE -D BUILD_FFMPEG=ON \
     -D OPENCV_EXTRA_MODULES_PATH=${OPENCV_CONTRIB_DIR}contrib/modules \
     -D CMAKE_INSTALL_PREFIX=/usr/local .. && make -j4 && make install && \
-    mv /usr/local/lib/python3.4/dist-packages/cv2.cpython-34m.so /usr/local/lib/python3.4/dist-packages/cv2.so && \
+    mv /usr/local/lib/python3.4/site-packages/cv2.cpython-34m.so /usr/local/lib/python3.4/site-packages/cv2.so && \
     rm -rf ${OPENCV_DIR}
 
 WORKDIR /src/app
 
 COPY docker-requirements.txt /src/requirements/docker-requirements.txt
 RUN pip3 install -r /src/requirements/docker-requirements.txt
+
+
+RUN apt-get -y install gstreamer1.0-rtsp gir1.2-gst-rtsp-server-1.0 python3-gst-1.0 gstreamer1.0-plugins-ugly 
 
 CMD ["python3", "app.py"]
