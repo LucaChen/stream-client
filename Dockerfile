@@ -5,14 +5,17 @@ MAINTAINER MD Islam <mdislamwork@gmail.com>
 
 RUN apt-get update && \
     apt-get -q -y install --no-install-recommends python3 \
-      python3-dev python3-pip build-essential cmake \
-      pkg-config libjpeg-dev libtiff5-dev libjasper-dev \
-      libpng-dev libavcodec-dev libavformat-dev libswscale-dev \
-      libv4l-dev libxvidcore-dev libx264-dev python3-yaml \
-      python3-scipy python3-h5py git && \
+    python3-dev python3-pip build-essential cmake \
+    pkg-config libjpeg-dev libtiff5-dev libjasper-dev \
+    libpng-dev libavcodec-dev libavformat-dev libswscale-dev \
+    libv4l-dev libxvidcore-dev libx264-dev python3-yaml \
+    python3-scipy python3-h5py git && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
+
+
+RUN python3 -V
 
 # OpenCV
 ENV OPENCV_VERSION="3.4.0"
@@ -38,9 +41,9 @@ RUN cd ${OPENCV_DIR} && \
     cd ${OPENCV_DIR}opencv-${OPENCV_VERSION}/build && \
     cmake -D CMAKE_BUILD_TYPE=RELEASE -D BUILD_FFMPEG=ON \
     -D OPENCV_EXTRA_MODULES_PATH=${OPENCV_CONTRIB_DIR}contrib/modules \
-    -D CMAKE_INSTALL_PREFIX=/usr/local .. && make -j4 && make install && \
-    mv /usr/local/lib/python3.4/site-packages/cv2.cpython-34m.so /usr/local/lib/python3.4/site-packages/cv2.so && \
-    rm -rf ${OPENCV_DIR}
+    -D CMAKE_INSTALL_PREFIX=/usr/local .. && make -j4 && make install
+
+RUN python3 -c "import cv2; print(cv2.__version__)" 
 
 WORKDIR /src/app
 
